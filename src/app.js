@@ -1,0 +1,36 @@
+import express from 'express';
+import cors from 'cors';
+import * as tf from '@tensorflow/tfjs';
+import { chat as byte_01 } from './Byte-01/model.js';
+
+const api = express();
+api.use(express.json());
+api.use(cors());
+
+const middleware = (req, res, next) => {
+	const REQ_APY_KEY = headers['API_KEY'];
+	
+	if (REQ_API_KEY === process.env.API_KEY) {
+		res.json({ 'status': 'correct' });
+		next();
+	}
+	else if (REQ_APY_KEY !== process.env.API_KEY) {
+		res.json({ 'status': 'API_KEY invalid' });
+	} else {
+		res.json({ 'Error': 'Unknown error'});
+	}
+};
+
+api.post('/api/:model', middleware, (req, res) => {
+  const model = req.params.model;
+  const message = req.body.message;
+  
+  if (model === 'byte-01') {
+    res.json({ output: byte_01(message)});
+  } else {
+    res.json({ error: 'model or message error.'});
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+api.listen(PORT);
