@@ -72,7 +72,7 @@ function predictNext(word) {
   return nextWord;
 }
 
-function chat(startWord) {
+function Lumens01(startWord) {
   let word = startWord;
   let result = word;
   
