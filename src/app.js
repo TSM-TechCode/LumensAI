@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as tf from '@tensorflow/tfjs';
-import { chat as Lumens_01 } from './Lumens-01/model.js';
+import { Lumens_01 } from './Lumens-01/model.js';
 
 const api = express();
 api.use(express.json());
