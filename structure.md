@@ -1,9 +1,9 @@
 ```
 LumensAI/
 |
-|-- root/
-|   |-- package.json
-|   |-- scructure.md
+|
+|-- package.json
+|-- scructure.md
 |
 |-- src/
     |-- app.js
