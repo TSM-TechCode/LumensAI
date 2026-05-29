@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as tf from '@tensorflow/tfjs';
-import { Lumens_01 } from './Lumens-01/model.js';
+import { Lumens01 } from './Lumens-01/model.js';
 
 const api = express();
 api.use(express.json());
@@ -26,7 +26,7 @@ api.post('/api/:model', middleware, (req, res) => {
   const message = req.body.message;
   
   if (model === 'Lumens-01') {
-    res.json({ output: Lumens_01(message)});
+    res.json({ output: Lumens01(message)});
   } else {
     res.json({ error: 'model or message error.'});
   }
