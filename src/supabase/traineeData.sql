@@ -1,5 +1,5 @@
-CREATE TABLE datsets(
+CREATE TABLE datasets(
   id SERIAL PRIMARY KEY,
   title TEXT,
-  data TEXT
+  content TEXT
 );
