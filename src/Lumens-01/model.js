@@ -55,8 +55,8 @@ model.compile({
   loss: "sparseCategoricalCrossentropy"
 });
 
-const xs = tf.tensor2d(xs, [xs.length, 1]);
-const ys = tf.tensor2d(ys);
+const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
+const ysTensor = tf.tensor2d(ys);
 
 await model.fit(xsTensor, ysTensor, {
   epochs: 500
