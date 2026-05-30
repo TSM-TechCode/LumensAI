@@ -71,7 +71,7 @@ const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
 const ysTensor = tf.tensor1d(ys, 'int32');
 
 await model.fit(xsTensor, ysTensor, {
-  epochs: 500,
+  epochs: 512,
   verbose: 1
 });
 
