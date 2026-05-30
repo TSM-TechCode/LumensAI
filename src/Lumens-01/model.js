@@ -2,20 +2,32 @@ import * as tf from '@tensorflow/tfjs';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-	process.env.SUPABASE_URL,
-	process.env.SUPABASE_API_KEY
-	);
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_API_KEY
+);
 
-const corpus = supabase.select('*').from('datasets');
+const { data, error } = await supabase
+  .from('datasets')
+  .select('title, content');
+
+if (error) {
+  throw error;
+}
+
+const corpus = data.map(
+  row => `${row.title} ${row.content}`
+    .toLowerCase()
+    .replace(/[.,!?;:()"']/g, '')
+);
 
 const vocab = {};
 
 function buildVocabulary(texts) {
   let index = 1;
-  
+
   texts.forEach(text => {
-    text.split(' ').forEach(words => {
-      if (!vocab[word]) {
+    text.split(/\s+/).forEach(word => {
+      if (word && !vocab[word]) {
         vocab[word] = index++;
       }
     });
@@ -24,17 +36,15 @@ function buildVocabulary(texts) {
 
 buildVocabulary(corpus);
 
-function encode(sentence) {
-  return sentence.split(' ').map(vocab[word]);
-}
 const xs = [];
 const ys = [];
 
 corpus.forEach(sentence => {
-  const words = sentence.split(' ');
-  for (let i = 0;i < words.length -1; i++) {
+  const words = sentence.split(/\s+/);
+
+  for (let i = 0; i < words.length - 1; i++) {
     xs.push(vocab[words[i]]);
-    ys.push(vocab[word[i - 1]]);
+    ys.push(vocab[words[i + 1]]);
   }
 });
 
@@ -45,44 +55,61 @@ model.add(tf.layers.dense({
   inputShape: [1],
   activation: 'relu'
 }));
+
 model.add(tf.layers.dense({
   units: Object.keys(vocab).length + 1,
   activation: 'softmax'
 }));
 
 model.compile({
-  optimizer: "adam",
-  loss: "sparseCategoricalCrossentropy"
+  optimizer: 'adam',
+  loss: 'sparseCategoricalCrossentropy',
+  metrics: ['accuracy']
 });
 
 const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
-const ysTensor = tf.tensor2d(ys);
+const ysTensor = tf.tensor1d(ys, 'int32');
 
 await model.fit(xsTensor, ysTensor, {
-  epochs: 500
+  epochs: 500,
+  verbose: 1
 });
 
 function predictNext(word) {
-  const input = tf.tensor2d([vocab[word]], [1, 1]);
+  word = word.toLowerCase();
+
+  const wordIndex = vocab[word];
+
+  if (!wordIndex) {
+    return null;
+  }
+
+  const input = tf.tensor2d([wordIndex], [1, 1]);
+
   const prediction = model.predict(input);
-  const index = prediction.argMax(1).dataSync()[0];
-  
-  const nextWord = Object.keys(vocab).find(key => vocab[key] === 1);
-  
-  return nextWord;
+
+  const predictedIndex =
+    prediction.argMax(1).dataSync()[0];
+
+  return Object.keys(vocab).find(
+    key => vocab[key] === predictedIndex
+  ) || null;
 }
 
-export function Lumens01(startWord) {
-  let word = startWord;
+export function Lumens01(startWord, maxWords = 10) {
+  let word = startWord.toLowerCase();
   let result = word;
-  
-  for (let i = 0;i < 5; i++) {
+
+  for (let i = 0; i < maxWords; i++) {
     const nextWord = predictNext(word);
-    
-    if (!nextWord) break;
-    
-    result += 'u' + nextWord;
+
+    if (!nextWord) {
+      break;
+    }
+
+    result += ' ' + nextWord;
     word = nextWord;
   }
+
   return result;
-}
+	  }
