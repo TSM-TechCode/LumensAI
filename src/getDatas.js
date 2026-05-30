@@ -50,6 +50,7 @@ const supabase = createClient(
   'School',
   'Emotionation',
   'Formula_1',
+  'Ferrari'
 ];
 
 async function saveToDB(input, output, category) {
