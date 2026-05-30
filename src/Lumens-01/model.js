@@ -7,7 +7,7 @@ const supabase = createClient(
 );
 
 const { data, error } = await supabase
-  .from('datasets')
+  .from('dataset')
   .select('title, content');
 
 if (error) {
