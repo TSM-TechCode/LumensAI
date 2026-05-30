@@ -72,7 +72,7 @@ function predictNext(word) {
   return nextWord;
 }
 
-expor default function Lumens01(startWord) {
+export function Lumens01(startWord) {
   let word = startWord;
   let result = word;
   
