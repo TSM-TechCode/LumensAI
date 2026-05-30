@@ -6,6 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_API_KEY
 );
 
+// pega dados do banco
 const { data, error } = await supabase
   .from('dataset')
   .select('title, data');
@@ -14,102 +15,96 @@ if (error) {
   throw error;
 }
 
-const corpus = data.map(
-  row => `${row.title} ${row.content}`
+// junta title + qualquer coluna existente (evita erro de schema)
+const corpus = data.map(row =>
+  Object.values(row).join(' ')
     .toLowerCase()
     .replace(/[.,!?;:()"']/g, '')
 );
 
+// vocab
 const vocab = {};
+let index = 1;
 
-function buildVocabulary(texts) {
-  let index = 1;
-
-  texts.forEach(text => {
-    text.split(/\s+/).forEach(word => {
-      if (word && !vocab[word]) {
-        vocab[word] = index++;
-      }
-    });
+corpus.forEach(text => {
+  text.split(/\s+/).forEach(word => {
+    if (word && !vocab[word]) {
+      vocab[word] = index++;
+    }
   });
-}
+});
 
-buildVocabulary(corpus);
-
+// dataset
 const xs = [];
 const ys = [];
 
 corpus.forEach(sentence => {
-  const  palavras = frase.split ( / \s+ / ) ;
+  const words = sentence.split(/\s+/);
 
-  para  ( let  i = 0 ; i < palavras.comprimento - 1 ; i ++ ) {​​ 
-    xs.push ( vocab [ words [ i ] ] ) ;​​
-    ys.push ( vocab [ words [ i + 1 ] ] ) ;​​
+  for (let i = 0; i < words.length - 1; i++) {
+    xs.push(vocab[words[i]]);
+    ys.push(vocab[words[i + 1]]);
   }
-} ) ;
+});
 
-const  model = tf.sequential ( ) ;​​
+// modelo
+const model = tf.sequential();
 
-modelo.adicionar ( tf.layers.dense ( {​​​​​​
-  unidades : 512 ,
-  inputShape : [ 1 ] ,
-  ativação : 'relu'
-} ) ) ;
+model.add(tf.layers.dense({
+  units: 128,
+  inputShape: [1],
+  activation: 'relu'
+}));
 
-modelo.adicionar ( tf.layers.dense ( {​​​​​​
-  unidades : Objeto.chaves ( vocabulário ) .comprimento + 1 ,​​​
-  ativação : 'softmax'
-} ) ) ;
+model.add(tf.layers.dense({
+  units: Object.keys(vocab).length + 1,
+  activation: 'softmax'
+}));
 
-modelo . compilar ( {
-  otimizador : 'adam' ,
-  perda : 'sparseCategoricalCrossentropy' ,
-  métricas : [ 'precisão' ]
-} ) ;
+model.compile({
+  optimizer: 'adam',
+  loss: 'sparseCategoricalCrossentropy'
+});
 
-const  xsTensor = tf.tensor2d ( xs , [ xs.length , 1 ] ) ;​​​​
-const  ysTensor = tf.tensor1d ( ys , ' int32 ' ) ;
+// tensores
+const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
+const ysTensor = tf.tensor1d(ys, 'int32');
 
-aguardar  modelo . ajustar ( xsTensor , ysTensor , {
-  épocas : 512 ,
-  verboso : 1
-} ) ;
+// treino leve (Render não aguenta 500 epochs bem)
+await model.fit(xsTensor, ysTensor, {
+  epochs: 50,
+  verbose: 1
+});
 
-função  preverPróximo ( palavra )  {
-  palavra = palavra.paraLowerCase ( ) ;​​
+// predição
+function predictNext(word) {
+  word = word.toLowerCase();
 
-  const  wordIndex = vocab [ palavra ] ;
-
-  se  ( ! wordIndex )  {
-    return null;
-  }
+  const wordIndex = vocab[word];
+  if (!wordIndex) return null;
 
   const input = tf.tensor2d([wordIndex], [1, 1]);
-
   const prediction = model.predict(input);
 
-  const predictedIndex =
-    prediction.argMax(1).dataSync()[0];
+  const predictedIndex = prediction.argMax(1).dataSync()[0];
 
   return Object.keys(vocab).find(
     key => vocab[key] === predictedIndex
-  ) || null;
+  );
 }
 
-export function Lumens01(startWord, maxWords = 10) {
+// export principal
+export function Lumens01(startWord, maxWords = 8) {
   let word = startWord.toLowerCase();
   let result = word;
 
   for (let i = 0; i < maxWords; i++) {
-    const nextWord = predictNext(word);
+    const next = predictNext(word);
+    if (!next) break;
 
-    if (!nextWord) {
-      break;
-    }
-
-    result += ' ' + nextWord;
-    word = nextWord;
+    result += ' ' + next;
+    word = next;
   }
 
   return result;
-	  }
+	}
