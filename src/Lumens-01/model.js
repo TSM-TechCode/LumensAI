@@ -8,7 +8,7 @@ const supabase = createClient(
 
 const { data, error } = await supabase
   .from('dataset')
-  .select('title, content');
+  .select('title, data');
 
 if (error) {
   throw error;
@@ -40,47 +40,47 @@ const xs = [];
 const ys = [];
 
 corpus.forEach(sentence => {
-  const words = sentence.split(/\s+/);
+  const  palavras = frase.split ( / \s+ / ) ;
 
-  for (let i = 0; i < words.length - 1; i++) {
-    xs.push(vocab[words[i]]);
-    ys.push(vocab[words[i + 1]]);
+  para  ( let  i = 0 ; i < palavras.comprimento - 1 ; i ++ ) {​​ 
+    xs.push ( vocab [ words [ i ] ] ) ;​​
+    ys.push ( vocab [ words [ i + 1 ] ] ) ;​​
   }
-});
+} ) ;
 
-const model = tf.sequential();
+const  model = tf.sequential ( ) ;​​
 
-model.add(tf.layers.dense({
-  units: 512,
-  inputShape: [1],
-  activation: 'relu'
-}));
+modelo.adicionar ( tf.layers.dense ( {​​​​​​
+  unidades : 512 ,
+  inputShape : [ 1 ] ,
+  ativação : 'relu'
+} ) ) ;
 
-model.add(tf.layers.dense({
-  units: Object.keys(vocab).length + 1,
-  activation: 'softmax'
-}));
+modelo.adicionar ( tf.layers.dense ( {​​​​​​
+  unidades : Objeto.chaves ( vocabulário ) .comprimento + 1 ,​​​
+  ativação : 'softmax'
+} ) ) ;
 
-model.compile({
-  optimizer: 'adam',
-  loss: 'sparseCategoricalCrossentropy',
-  metrics: ['accuracy']
-});
+modelo . compilar ( {
+  otimizador : 'adam' ,
+  perda : 'sparseCategoricalCrossentropy' ,
+  métricas : [ 'precisão' ]
+} ) ;
 
-const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
-const ysTensor = tf.tensor1d(ys, 'int32');
+const  xsTensor = tf.tensor2d ( xs , [ xs.length , 1 ] ) ;​​​​
+const  ysTensor = tf.tensor1d ( ys , ' int32 ' ) ;
 
-await model.fit(xsTensor, ysTensor, {
-  epochs: 512,
-  verbose: 1
-});
+aguardar  modelo . ajustar ( xsTensor , ysTensor , {
+  épocas : 512 ,
+  verboso : 1
+} ) ;
 
-function predictNext(word) {
-  word = word.toLowerCase();
+função  preverPróximo ( palavra )  {
+  palavra = palavra.paraLowerCase ( ) ;​​
 
-  const wordIndex = vocab[word];
+  const  wordIndex = vocab [ palavra ] ;
 
-  if (!wordIndex) {
+  se  ( ! wordIndex )  {
     return null;
   }
 
