@@ -8,7 +8,7 @@ api.use(express.json());
 api.use(cors());
 
 const middleware = (req, res, next) => {
-	const REQ_API_KEY = req.headers['API_KEY'];
+	const REQ_API_KEY = req.headers['api_key'];
 	
 	if (REQ_API_KEY === process.env.API_KEY) {
 		next();
