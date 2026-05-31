@@ -8,13 +8,12 @@ api.use(express.json());
 api.use(cors());
 
 const middleware = (req, res, next) => {
-	const REQ_APY_KEY = headers['API_KEY'];
+	const REQ_API_KEY = req.headers['API_KEY'];
 	
 	if (REQ_API_KEY === process.env.API_KEY) {
-		res.json({ 'status': 'correct' });
 		next();
 	}
-	else if (REQ_APY_KEY !== process.env.API_KEY) {
+	else if (REQ_API_KEY !== process.env.API_KEY) {
 		res.json({ 'status': 'API_KEY invalid' });
 	} else {
 		res.json({ 'Error': 'Unknown error'});
@@ -28,7 +27,7 @@ api.post('/api/:model', middleware, (req, res) => {
   if (model === 'Lumens-01') {
     res.json({ output: Lumens01(message)});
   } else {
-    res.json({ error: 'model or message error.'});
+    res.status(400).json({ error: 'model or message error.'});
   }
 });
 
